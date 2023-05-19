@@ -139,9 +139,10 @@ shinyServer(function(input, output, session){
         add_histogram(x = ~get(input$colSel))
     } else{
       temp_data <- cityData()  %>% filter(City == input$citysel) %>% 
-        select(input$colSel) %>% count(get(input$colSel))
-      final <- plot_ly(data = barData(), hoverinfo = "none") %>% 
-        add_bars(x = ~chosen_factor,y = ~n)
+        select(input$colSel) %>% count(get(input$colSel)) %>% 
+        rename(chosen_factor = "get(input$colSel)")
+      final <- plot_ly(data = temp_data, type = "bar",
+                       x = ~chosen_factor, y = ~n)
     }
     final %>% layout(yaxis = list(title = "Count"),
                      xaxis = list(title = input$colSel))
