@@ -157,10 +157,11 @@ shinyServer(function(input, output, session){
     price with other factors.
     <br>
     <br>
-    One interesting find is that there seems to be no major effect of price on 
-    factors not directly related to the room itself. Though price seemed to go
-    up as the room size and satisfaction rating went up, price seemed to not be 
-    affected much by distance to city center or attraction ratings.")
+    One interesting find is that price is barely correlated with 
+    factors not directly related to the room itself. Though price seemed to go 
+    up as the room size and satisfaction rating went up, price seemed to 
+    be weakly, if at all, correlated with distance to city center or 
+    attraction ratings.")
   })
   
   updateSelectInput(session, "numColSel", 
@@ -218,9 +219,9 @@ shinyServer(function(input, output, session){
          price with other factors.
          <br>
          <br>
-         Contrary to price, we can see that attraction index is affected by 
-         a good number of factors. Anything factor that is not price, 
-         the number of bedrooms, or people capacity have a correlation with 
+         Contrary to price, we can see that attraction index is strongly  
+         correlated with a good number of factors. Any factors that are not price, 
+         the number of bedrooms, or people capacity have some correlation with 
          attraction index. For example, closer the Airbnb is to city center, 
          the higher the attraction index is.")
   })
