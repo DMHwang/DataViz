@@ -1,0 +1,316 @@
+---
+title: "VizProjectMunging"
+author: "Paul Hwang"
+date: "2023-04-25"
+output: html_document
+---
+
+data from following kaggle site
+https://www.kaggle.com/datasets/dipeshkhemani/airbnb-cleaned-europe-dataset
+
+
+```{r}
+library(data.table)
+library(dplyr)
+library(plotly)
+library(maps)
+library(leaflet)
+library(ggmap)
+library(plotly)
+library(ggplot2)
+library(reshape2)
+```
+
+
+
+## Load Data
+
+```{r}
+airbnb <- fread("Data/Aemf1.csv")
+```
+
+```{r}
+airbnb <- airbnb %>% select(City, Price, Day, `Room Type`, `Person Capacity`,
+                            Superhost, `Cleanliness Rating`, 
+                            `Guest Satisfaction`, Bedrooms, `City Center (km)`,
+                            `Metro Distance (km)`, `Attraction Index`,
+                            `Normalised Attraction Index`,
+                            `Restraunt Index`, `Normalised Restraunt Index`) %>%
+  rename(Room_Type = `Room Type`, 
+                  Person_Capacity = `Person Capacity`,
+                  Cleanliness_Rating = `Cleanliness Rating`,
+                  Guest_Satisfaction_Rating = `Guest Satisfaction`,
+                  City_Center_Distance = `City Center (km)`,
+                  Metro_Distance = `Metro Distance (km)`,
+                  Attraction_Index = `Attraction Index`,
+                  Normalized_Attraction_Index = `Normalised Attraction Index`,
+                  Restaurant_Index = `Restraunt Index`,
+                  Normalized_Restaurant_Index = `Normalised Restraunt Index`) %>%
+  relocate(City, Price, Superhost, Day, Room_Type, Bedrooms, Person_Capacity,
+           Guest_Satisfaction_Rating, Cleanliness_Rating, City_Center_Distance,
+           Metro_Distance, Attraction_Index, Normalized_Attraction_Index, 
+           Restaurant_Index, Normalized_Restaurant_Index)
+```
+
+
+
+```{r}
+airbnb_ams <- airbnb %>% filter(City == "Amsterdam")
+```
+
+
+
+```{r}
+airbnb %>% count(City)
+```
+
+
+## Data Observation: Overall
+
+```{r}
+avg_val <- airbnb %>% group_by(City) %>% 
+  summarize(`Median Price` = round(median(Price), digit = 0),
+            `Prop Superhost` = round(mean(`Superhost`), digit = 3),
+            `Median Bedrooms` = median(Bedrooms),
+            `Median Person_Capacity` = median(`Person_Capacity`),
+            `Median Clean_Rating` = median(`Cleanliness_Rating`),
+            `Median Satisfaction` = median(`Guest_Satisfaction_Rating`),
+            `Median City Center Dist` = round(median(`City_Center_Distance`), 
+                                              digit = 3),
+            `Median Metro Dist` = round(median(`Metro_Distance`),
+                                        digit = 3),
+            `Median Attraction Index` = round(median(`Attraction_Index`),
+                                              digit = 3),
+            `Median Restaurant Index` = round(median(`Restaurant_Index`), 
+                                              digit = 3))
+
+avg_val
+```
+
+```{r}
+df_days <- airbnb %>% select(City, Day) %>% group_by(City) %>% count(Day) %>%
+  mutate(`Prop Weekend` = round(n/sum(n), digit = 3)) %>% filter(Day == "Weekend") %>% 
+  select(City, `Prop Weekend`)
+
+df_rooms <- airbnb %>% select(City, Room_Type) %>% group_by(City) %>% count(Room_Type) %>%
+  mutate(Prop = round(n/sum(n), digit = 3)) %>% select(City, Room_Type, Prop) %>%
+  pivot_wider(names_from = Room_Type, values_from = Prop)
+
+```
+
+```{r}
+
+city_avg <-df_days %>% left_join(df_rooms, by = "City") %>% 
+  left_join(avg_val, by = "City")
+
+city_avg
+```
+
+
+
+## Histogram
+
+```{r}
+summary(airbnb$Price)
+plot_ly(data = airbnb, type = "histogram", x = ~Price)
+```
+
+
+## Scatter Plot 2D
+
+```{r}
+plot_ly(data = airbnb, type = "scatter", mode = "markers", 
+        x = ~`Attraction_Index`, y = ~`Restaurant_Index`, color = ~City,
+        colors = "Set1",
+        marker = list(size = 5, alpha = 0.3)) %>%
+  layout(xaxis = list(title = "Attraction Index"),
+         yaxis = list(title = "Restaurant Index"))
+
+plot_ly(data = airbnb, type = "scatter", mode = "markers", 
+        x = ~`Normalised Attraction Index`, y = ~`Normalised Restraunt Index`, color = ~City,
+        colors = "Set1",
+        marker = list(size = 5, alpha = 0.3)) %>%
+  layout(xaxis = list(title = "Normalized Attraction Index"),
+         yaxis = list(title = "Normalized Restaurant Index"))
+```
+
+
+## Scatter Plot 3d
+
+```{r}
+plot_ly(data = airbnb_subset, x = ~`Attraction Index`, y = ~`Restraunt Index`, 
+        z = ~Price, color = ~City, colors = "Set1",
+        type = "scatter3d", mode = "markers", marker = list(size = 5)) %>%
+  layout(scene = list(xaxis = list(title = "Attraction Index"),
+                      yaxis = list(title = "Restaurant Index"),
+                      zaxis = list(title = "Price")))
+
+plot_ly(data = airbnb_subset, x = ~`Normalised Attraction Index`, 
+        y = ~`Normalised Restraunt Index`, 
+        z = ~Price, color = ~City, colors = "Set1",
+        type = "scatter3d", mode = "markers", marker = list(size = 5)) %>%
+  layout(scene = list(xaxis = list(title = "Attraction Index"),
+                      yaxis = list(title = "Restaurant Index"),
+                      zaxis = list(title = "Price")))
+
+plot_ly(data = airbnb_subset, x = ~`City Center (km)`, 
+        y = ~`Metro Distance (km)`, 
+        z = ~`Attraction Index`, color = ~City, colors = "Set1",
+        type = "scatter3d", mode = "markers", marker = list(size = 5))
+```
+
+
+
+## Contour Plot Attemp
+
+```{r}
+ggplot(data = airbnb_ams, aes(x = `Normalised Attraction Index`, 
+                              y = `Normalised Restraunt Index`,
+                              z = Price)) + geom_contour()
+
+ggplot(data = airbnb_ams, aes(x = `Normalised Attraction Index`, 
+                              y = `Normalised Restraunt Index`)) + 
+  geom_density2d_filled(alpha = 0.5)
+
+ggplot(data = airbnb_ams, aes(x = `Normalised Attraction Index`, 
+                              y = `Normalised Restraunt Index`)) + 
+  geom_raster(aes(fill = Price), interpolate = TRUE)
+
+ggplot(data = airbnb_ams, aes(x = `Normalised Attraction Index`, 
+                              y = `Normalised Restraunt Index`)) + 
+  geom_raster()
+
+ggplot(data = airbnb_ams, aes(x = `City Center (km)`, y = `Cleanliness Rating`,
+                              z = `Attraction Index`)) +
+  geom_density2d(aes(fill = `Attraction Index`), goem = "polygon")
+```
+
+## density plots
+```{r}
+## heatmap -- doesnt work
+plot_ly(data = airbnb_ams, x = ~City_Center_Distance, 
+        y = ~Metro_Distance, 
+        z = ~Price, type = "heatmap", colors = "Blues")
+
+
+## surface plot
+plot_ly(data = airbnb_ams, x = ~City_Center_Distance, 
+        y = ~Metro_Distance, 
+        z = ~Price, type = "surface")
+
+plot_ly(data = airbnb_ams, x = ~City_Center_Distance, 
+        y = ~Metro_Distance, 
+        type = "histogram2dcontour")
+
+plot_ly(data = airbnb_ams, x = ~Attraction_Index, 
+        y = ~Restaurant_Index, 
+        type = "histogram2dcontour")
+
+plot_ly(data = airbnb_ams, x = ~Attraction_Index, 
+        y = ~City_Center_Distance, 
+        type = "histogram2dcontour")
+
+
+test <- "hello"
+
+plot_ly(data = airbnb_ams, x = ~City_Center_Distance, 
+        y = ~Metro_Distance, 
+        z = ~Price, type = "scatter3d", mode = "markers",
+        opacity = 0.5,
+        marker = list(size = 2)) %>%
+  layout(scene = list(xaxis = list(title = "Factor1"),
+                      yaxis = list(title = test),
+                      zaxis = list(title = "Factor3")))
+```
+
+
+
+```{r}
+
+# Generate random data
+set.seed(1)
+x <- rnorm(100)
+y <- rnorm(100)
+z <- rnorm(100)
+
+# Create a 3D scatter plot
+plot <- plot_ly(x = x, y = y, z = z, mode = "markers")
+
+# Update the axis labels
+plot <- plot %>% layout(scene = list(
+  xaxis = list(title = "X-Axis Label"),
+  yaxis = list(title = "Y-Axis Label"),
+  zaxis = list(title = "Z-Axis Label")
+))
+
+# Display the plot
+plot
+
+```
+
+
+
+```{r}
+
+plot_ly(data = airbnb_ams, x = ~City_Center_Distance, 
+        y = ~Metro_Distance, 
+        z = ~Price, type = "surface")
+
+
+```
+
+```{r}
+plot_ly(data = airbnb_ams, type = "scatter", mode = "markers",
+        x = ~City_Center_Distance, y = ~Price)
+
+
+plot_ly(data = airbnb_ams, type = "scatter", mode = "markers",
+        x = ~Metro_Distance, y = ~City_Center_Distance, color = ~Price,
+        opacity = 0.2, marker = list(size = 40))
+```
+
+```{r}
+colnames(airbnb %>% select_if(is.numeric))
+```
+
+## test env
+
+```{r}
+test = "Attraction_Index" 
+
+plot_ly(data = airbnb_ams, 
+            type = "histogram2dcontour",
+            x = ~Attraction_Index,
+            y = ~Restaurant_Index)
+```
+
+
+
+## Code Dump
+
+```{r}
+## ui
+,
+            fluidRow(
+              box(
+                width = 12,
+                status = "primary",
+                title = "Distribution of Price and selected factor",
+                solidHeader = TRUE,
+                plotlyOutput("price2d")
+              )
+            )
+
+
+## server
+
+  output$price2d <- renderPlotly({
+    plot_ly(data = cityData(), type = "scatter", mode = "markers",
+            y = ~Price, x = ~get(input$numColSel))
+  })
+
+```
+
+
+
+
