@@ -177,7 +177,11 @@ shinyServer(function(input, output, session){
   output$price2d <- renderPlotly({
     plot_ly(data = cityData()  %>% filter(City == input$citysel2), 
             type = "scatter", mode = "markers",
-            y = ~Price, x = ~get(input$numColSel)) %>% 
+            y = ~Price, x = ~get(input$numColSel),
+            hovertemplate = paste("Price: %{y:.2f}<br>",
+                                  input$numColSel, " : %{x:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>% 
       layout(xaxis = list(title = input$numColSel))
   })
   
@@ -185,7 +189,12 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData() %>% filter(City == input$citysel2), 
             type = "histogram2dcontour",
             x = ~get(input$numColSel),
-            y = ~Price) %>%
+            y = ~Price,
+            hovertemplate = paste("Price: %{y:.2f}<br>",
+                                  input$numColSel, " : %{x:.2f}<br>",
+                                  "z: %{z:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(xaxis = list(title = input$numColSel),
              yaxis = list(title = "Price"))
   })
@@ -196,7 +205,12 @@ shinyServer(function(input, output, session){
             z = ~Price, x = ~get(input$numColSel), 
             y = ~get(input$numColSel2), opacity = 0.5,
             color = ~Price,
-            marker = list(size = 2)) %>%
+            marker = list(size = 2),
+            hovertemplate = paste("Price: %{z:.2f}<br>",
+                                  input$numColSel, " : %{x:.2f}<br>",
+                                  input$numColSel2, ": %{y:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(scene = list(xaxis = list(title = input$numColSel),
                           yaxis = list(title = input$numColSel2)))
   })
@@ -205,7 +219,12 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData() %>% filter(City == input$citysel2), 
             type = "histogram2dcontour",
             x = ~get(input$numColSel),
-            y = ~get(input$numColSel2)) %>%
+            y = ~get(input$numColSel2),
+            hovertemplate = paste(input$numColSel2, " : %{y:.2f}<br>",
+                                  input$numColSel, " : %{x:.2f}<br>",
+                                  "z: %{z:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(xaxis = list(title = input$numColSel),
              yaxis = list(title = input$numColSel2))
   })
@@ -239,7 +258,11 @@ shinyServer(function(input, output, session){
   output$attract2d <- renderPlotly({
     plot_ly(data = cityData()  %>% filter(City == input$citysel3), 
             type = "scatter", mode = "markers",
-            y = ~Attraction_Index, x = ~get(input$numColSel3)) %>% 
+            y = ~Attraction_Index, x = ~get(input$numColSel3),
+            hovertemplate = paste("Attraction_Index: %{y:.2f}<br>",
+                                  input$numColSel3, " : %{x:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>% 
       layout(xaxis = list(title = input$numColSel3))
   })
   
@@ -247,8 +270,13 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData() %>% filter(City == input$citysel3), 
             type = "histogram2dcontour",
             x = ~get(input$numColSel3),
-            y = ~Attraction_Index) %>%
-      layout(yaxis = list(title = input$numColSel4))
+            y = ~Attraction_Index,
+            hovertemplate = paste("Attraction Index: %{y:.2f}<br>",
+                                  input$numColSel3, " : %{x:.2f}<br>",
+                                  "z: %{z:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
+      layout(xaxis = list(title = input$numColSel3))
   })
   
   output$attract3d <- renderPlotly({
@@ -257,7 +285,12 @@ shinyServer(function(input, output, session){
             z = ~Attraction_Index, x = ~get(input$numColSel3), 
             y = ~get(input$numColSel4), opacity = 0.5,
             color = ~Attraction_Index,
-            marker = list(size = 2)) %>%
+            marker = list(size = 2),
+            hovertemplate = paste("Attraction Index: %{z:.2f}<br>",
+                                  input$numColSel3, " : %{x:.2f}<br>",
+                                  input$numColSel4, " : %{y:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(scene = list(xaxis = list(title = input$numColSel3),
                           yaxis = list(title = input$numColSel4)))
   })
@@ -266,7 +299,12 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData() %>% filter(City == input$citysel3), 
             type = "histogram2dcontour",
             x = ~get(input$numColSel3),
-            y = ~get(input$numColSel4)) %>%
+            y = ~get(input$numColSel4),
+            hovertemplate = paste(input$numColSel4, " : %{y:.2f}<br>",
+                                  input$numColSel3, " : %{x:.2f}<br>",
+                                  "z: %{z:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(xaxis = list(title = input$numColSel3),
              yaxis = list(title = input$numColSel4))
   })
@@ -296,7 +334,11 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData(), 
             type = "scatter", mode = "markers",
             x = ~get(input$numCol), y = ~get(input$numCol2),
-            color = ~City, opacity = 0.4, colors = "Set1") %>% 
+            color = ~City, opacity = 0.4, colors = "Set1",
+            hovertemplate = paste(input$numCol, " : %{x:.2f}<br>",
+                                  input$numCol2, ": %{y:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>% 
       layout(xaxis = list(title = input$numCol),
              yaxis = list(title = input$numCol2))
   })
@@ -305,7 +347,12 @@ shinyServer(function(input, output, session){
     plot_ly(data = cityData(), 
             type = "histogram2dcontour",
             x = ~get(input$numCol),
-            y = ~get(input$numCol2)) %>%
+            y = ~get(input$numCol2),
+            hovertemplate = paste(input$numCol2, " : %{y:.2f}<br>",
+                                  input$numCol, " : %{x:.2f}<br>",
+                                  "z: %{z:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(xaxis = list(title = input$numCol),
              yaxis = list(title = input$numCol2))
   })
@@ -319,7 +366,12 @@ shinyServer(function(input, output, session){
             opacity = 0.2,
             color = ~City,
             colors = "Set1",
-            marker = list(size = 2)) %>%
+            marker = list(size = 2),
+            hovertemplate = paste(input$numCol3, " : %{z:.2f}<br>",
+                                  input$numCol, " : %{x:.2f}<br>",
+                                  input$numCol2, ": %{y:.2f}",
+                                  "<extra></extra>"),
+            hoverinfo = "hovertemplate") %>%
       layout(scene = list(xaxis = list(title = input$numCol),
                           yaxis = list(title = input$numCol2),
                           zaxis = list(title = input$numCol3)))
